@@ -1,10 +1,14 @@
 todos = []
-while True:
+
+def show_todos():
     print()
-    print("待办清单(现在有", len(todos), "件) ")
+    print("待办清单(现在有", len(todos), "件)")
     for i in range(len(todos)):
-        print(i + 1, ".",todos[i])
-    action = input ("add 添加 / done 完成 / quit 退出: ")
+        print(i + 1, ".", todos[i])
+
+while True:
+    show_todos()
+    action = input("add 添加 / done 完成 / quit 退出: ")
     if action == "add":
         new = input("要做什么?")
         todos.append(new)
