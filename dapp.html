@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>我的 Counter DApp</title>
+<style>
+    body { text-align: center; font-family: Arial; margin-top: 60px; }
+    h1 { color: #4a90d9; }
+    button {font-size: 16px; padding: 8px 16px; margin: 5px; }
+    #count { color: #e74c3c; font-size: 22px; }
+    #address { color: #888; font-size: 13px; word-break: break-all; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>我的 Counter DApp</h1>
+    <button onclick="connectWallet()">连接钱包</button>
+    <p id="address">还没连接</p>
+    <hr>
+    <button onclick="readCount()">读取 count</button>
+    <button onclick="increment()">count +1</button>
+    <p id="count">-</p>
+    <script>
+        const CONTRACT_ADDRESS ="0x1aDC3E050f0DB9c261A84058902d11d50DD0AD3A";
+        const ABI = [
+            "function count() view returns (uint256)",
+            "function increment()"
+        ];
+        let contract;
+        async function connectWallet() {
+        if (typeof window.ethereum === "undefined") { document.getElementById("address").innerHTML = "没找到钱包, 请安装 MeteMask! "; return; }
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const address = await signer.getAddress();
+            document.getElementById("address").innerHTML = "已连接: " + address;
+            contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);}
+                    async function readCount() {
+            if (!contract) { alert("请先点「连接钱包」"); return; }
+            try {
+                const readProvider = new ethers.providers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
+                const readContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
+                const n = await readContract.count();
+                document.getElementById("count").innerHTML = "当前 count = " + n.toString();
+            } catch (e) {
+                document.getElementById("count").innerHTML = "读取失败：" + e.message;
+            }
+        }
+        async function increment() {
+            if (!contract) {alert("请先点 「连接钱包」"); return; }
+                const tx = await contract.increment();
+                document.getElementById("count").innerHTML = "交易已发送,等待确认...";
+                await tx.wait();
+            await readCount();
+        }
+    </script>
+</body>
+</html>
